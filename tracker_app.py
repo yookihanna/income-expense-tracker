@@ -44,7 +44,7 @@ if st.button("Add Transaction"):
             st.session_state.is_data_updated = False
         
         st.session_state.is_data_updated = True
-        st.experimental_rerun()  # This is just for the current session only
+        st.session_state  # This is just for the current session only
     else:
         st.warning("Please fill in required fields.")
 
