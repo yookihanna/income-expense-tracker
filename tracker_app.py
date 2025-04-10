@@ -38,13 +38,36 @@ if st.button("Add Transaction"):
         df = pd.concat([df, new_data], ignore_index=True)
         df.to_csv(FILE_NAME, index=False)
         st.success("Transaction added!")
-        st.experimental_rerun()
+
+        # Store a flag in session state to trigger rerun
+        if "is_data_updated" not in st.session_state:
+            st.session_state.is_data_updated = False
+        
+        st.session_state.is_data_updated = True
+        st.experimental_rerun()  # This is just for the current session only
     else:
         st.warning("Please fill in required fields.")
 
 # --- View Transactions ---
 st.header("📋 Transaction History")
-st.dataframe(df.sort_values(by="Date", ascending=False), use_container_width=True)
+
+# Display transactions with a delete button for each
+for index, row in df.iterrows():
+    with st.expander(f"Transaction {index+1}"):
+        st.write(f"**Date:** {row['Date']}")
+        st.write(f"**Type:** {row['Type']}")
+        st.write(f"**Category:** {row['Category']}")
+        st.write(f"**Amount:** RM {row['Amount']:.2f}")
+        st.write(f"**Description:** {row['Description']}")
+
+        # Add a delete button
+        delete_button = st.button(f"Delete Transaction {index+1}", key=f"delete_{index}")
+        
+        if delete_button:
+            df = df.drop(index)
+            df.to_csv(FILE_NAME, index=False)
+            st.success(f"Transaction {index+1} deleted!")
+            st.experimental_rerun()  # Re-run to update the display after deleting
 
 # --- Summary ---
 st.header("📊 Summary")
@@ -57,4 +80,3 @@ col3, col4, col5 = st.columns(3)
 col3.metric("Total Income", f"RM {income_total:.2f}")
 col4.metric("Total Expense", f"RM {expense_total:.2f}")
 col5.metric("Current Balance", f"RM {balance:.2f}")
-
