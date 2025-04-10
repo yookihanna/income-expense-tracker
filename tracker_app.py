@@ -40,11 +40,8 @@ if st.button("Add Transaction"):
         st.success("Transaction added!")
 
         # Store a flag in session state to trigger rerun
-        if "is_data_updated" not in st.session_state:
-            st.session_state.is_data_updated = False
-        
-        st.session_state.is_data_updated = True
-        st.session_state  # This is just for the current session only
+        st.session_state.is_data_updated = True  # Set this flag to True when data is updated
+
     else:
         st.warning("Please fill in required fields.")
 
@@ -67,7 +64,10 @@ for index, row in df.iterrows():
             df = df.drop(index)
             df.to_csv(FILE_NAME, index=False)
             st.success(f"Transaction {index+1} deleted!")
-            st.experimental_rerun()  # Re-run to update the display after deleting
+
+            # Set flag to True when data is updated
+            st.session_state.is_data_updated = True
+            break  # Exit the loop to avoid modifying df while iterating over it
 
 # --- Summary ---
 st.header("📊 Summary")
@@ -80,3 +80,8 @@ col3, col4, col5 = st.columns(3)
 col3.metric("Total Income", f"RM {income_total:.2f}")
 col4.metric("Total Expense", f"RM {expense_total:.2f}")
 col5.metric("Current Balance", f"RM {balance:.2f}")
+
+# Refresh the app only if data was updated
+if "is_data_updated" in st.session_state and st.session_state.is_data_updated:
+    st.session_state.is_data_updated = False  # Reset the flag
+    st.experimental_rerun()  # Trigger a rerun when data is updated
